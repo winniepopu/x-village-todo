@@ -1,0 +1,186 @@
+section {
+    margin: 50px 0;
+}
+
+.list-group-item,
+.list-group-item:hover,
+.list-group-item i,
+.list-group-item i:hover,
+.list-group-item:hover i {
+    transition: 0.3s;
+    transition-timing-function: cubic-bezier(0.075, 0.82, 0.165, 1);
+}
+
+.list-group-item {
+    cursor: pointer;
+    /* display mouse hand icon when hover the element */
+}
+
+.list-group-item:hover {
+    color: rgba(0, 0, 0, 0.7);
+    box-shadow: 0 0 5px 0 #2196F3;
+}
+
+.list-group-item i {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+
+/* When Hover list-group-item, show trash icon */
+
+.list-group-item:hover i {
+    opacity: 0.6;
+    pointer-events: auto;
+}
+
+.list-group-item i:hover {
+    opacity: 1;
+}
+
+.btnRemove {
+    right: 100px;
+}
+
+.jumbotron-advanced {
+    padding: 2rem 1rem !important;
+    margin-bottom: 2rem;
+    background-color: #add6ff !important;
+    border-radius: .3rem;
+    text-align: center;
+}
+
+.btnRemove {
+    cursor: pointer;
+}
+
+body {
+    background-color: #e2ebf3 !important;
+}
+
+#list-header {
+    padding: 0.5rem 0.7rem 0.5rem 0rem;
+}
+
+.list-group-item {
+    position: relative;
+    display: block;
+    padding: .75rem 1.25rem;
+    margin-bottom: -1px;
+    background-color: #e5fdf98e;
+    border: 1px solid rgba(49, 34, 13, 0.233)
+}
+
+.form-control {
+    display: inline-block;
+    width: 92%;
+    height: calc(2.25rem + 2px);
+    padding: .375rem .75rem;
+    font-size: 1rem;
+    line-height: 1.5;
+    color: #495057;
+    background-color: #e5fdf98e;
+    background-clip: padding-box;
+    border: 1px solid rgba(49, 34, 13, 0.233);
+    border-radius: .25rem;
+    transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out
+}
+
+.search-form {
+    padding: 0.5rem 0.7rem 0.5rem 0rem;
+    /*上 右 下 左*/
+}
+
+.search-control {
+    display: inline-block;
+    width: 35%;
+    height: calc(2.25rem + 2px);
+    padding: .375rem .75rem;
+    font-size: 1rem;
+    line-height: 1.5;
+    color: #495057;
+    background-color: #e5fdf98e;
+    background-clip: padding-box;
+    border: 1px solid rgba(49, 34, 13, 0.233);
+    border-radius: .25rem;
+    transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out
+}
+
+.use-flexbox {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn1 {
+    display: inline-block;
+    font-weight: 400;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: middle;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    border: 0.5px solid transparent;
+    padding: .3rem .75rem;
+    font-size: 1rem;
+    line-height: 1.5;
+    border-radius: .25rem;
+    transition: color .15s ease-in-out, background-color .15s ease-in-out, border-color .15s ease-in-out, box-shadow .15s ease-in-out
+}
+
+ul li {
+    cursor: pointer;
+    position: relative;
+    padding: 12px 8px 12px 40px;
+    list-style-type: none;
+    background: #eee;
+    font-size: 18px;
+    transition: 0.2s;
+    /* make the list items unselectable */
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+ul li.on-hide {
+    cursor: default;
+    position: relative;
+    padding: 12px 8px 12px 40px;
+    list-style-type: none;
+    background: #eee;
+    font-size: 18px;
+    transition: 0.2s;
+    /* make the list items unselectable */
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+ul .checked:not(.on-hide) {
+    background: #888;
+    color: #fff;
+    text-decoration: line-through;
+}
+
+.btn-primary.sorted {
+    color: #fff;
+    background-color: #145188;
+    border-color: #145188;
+}
+
+.btn-primary.hided {
+    color: #fff;
+    background-color: #145188;
+    border-color: #145188;
+}
+
+.btn-primary.on-time {
+    color: #fff;
+    background-color: #145188;
+    border-color: #145188;
+}

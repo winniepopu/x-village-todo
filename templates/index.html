@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Accounting</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.2.0/css/all.css" integrity="sha384-hWVjflwFxL6sNzntih27bfxkr27PmbbK/iSvJ+a4+0owXq79v+lsFkW54bOGbiDQ" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="/static/theme.css">
+    <script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
+
+</head>
+
+<body>
+    <div class="jumbotron jumbotron-fluid jumbotron-advanced">
+        <div class="container ">
+            <h1 class="display-2"> <img src="/static/list.png" alt="List1"> To-Do List</h1>
+            <p class="lead" data-index="5">Keep writing - Keep going </p>
+        </div>
+    </div>
+
+
+    <section class="input-group">
+        <div class="container">
+            <form id="post-form" class="">
+                <label for="exampleInputEmail1">To do Something..</label>
+                <div class="form-group use-flexbox">
+                    <input pattern=".{1,}" title="1 characters minimum" required type="text" class="form-control" id="input-item-name" aria-describedby="emailHelp" placeholder="Title..">
+                    <button class="btn btn-primary" type='submit'>Add</button>
+                </div>
+
+            </form>
+        </div>
+    </section>
+
+
+    <section class="account-list">
+
+        <div class="container">
+            <div id="list-header">
+
+                <h2 style="display:inline">To-Do-List</h2>
+                <div class="finish-count col-lg-5  pull-right  " style="display:inline">
+                    <button id="sort" type="button" class="btn btn1 btn-primary">Sort (The Newest)</button>
+                    <button id="display-time" type="button" class="btn btn1 btn-primary on-time">Time</button>
+                    <button id="hide" type="button" class="btn btn1 btn-primary">Hide</button>
+
+                </div>
+            </div>
+
+            <div class="search-form"><input id="search-input" class="search-control" type="text" placeholder="type name to search (大小寫需吻合)" />
+                <img src="/static/search.png">
+                <style id="m-search"></style>
+            </div>
+
+            <ul id="item-lists" class="list-group order-table">
+                <div class="wrap" data-index="Example: Do X-Village Web HW">
+                    <li class="list-group-item d-flex justify-content-between align-items-center  ">
+                        Example: Do X-Village Web HW
+                    </li>
+                </div>
+            </ul>
+        </div>
+    </section>
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+    <script>
+        // Whether Refresh the page after sending ajax requests
+        const Debug_Mode = false;
+        const BASE_URL = window.location.origin;
+        const API_URL = BASE_URL + '/record';
+        /**************************************************************
+         * Supports
+         **************************************************************/
+        function preventReload(e) {
+            if (Debug_Mode) {
+                e.preventDefault();
+            }
+        }
+
+        function generateDataHtml(data, sort) {
+            let elementsHtml = '';
+
+            if (sort === 1) {
+                data = data.sort(function(a, b) {
+                    return a.time < b.time ? 1 : -1;
+                });
+            }
+
+            for (item of data) {
+                /*createdtime=項目的時間*/
+                createdtime = '';
+                var time = item['time']
+                time = time.toString()
+                timing = [2, 3, 4, 5, 6, 7, 8, 9];
+                var count = 0
+                for (i of timing) {
+                    createdtime += time.charAt(i);
+
+                    if (count == 1) {
+                        createdtime += "/"
+                    }
+                    if (count == 3) {
+                        createdtime += " "
+                    }
+                    if (count == 5) {
+                        createdtime += ":"
+                    }
+                    count += 1;
+                }
+
+                /*若有check的項目*/
+                if (item['check'] === 1) {
+                    const element =
+                        `
+                        <div class="checked wrap" data-index="${item['name']}"><li data-record-id="${item['id']}" class="list-group-item d-flex justify-content-between align-items-center ">
+                        <div>
+                            <span class="time">${createdtime}</span>
+                            <span class="item-name">${item['name']}</span>                  
+                        </div>
+                        <i data-record-id="${item['id']}" class="btnRemove far fa-trash-alt"></i>
+                    </li></div>`;
+                    elementsHtml += element;
+                }
+
+                /*若沒有check的項目*/
+                else {
+                    const element =
+                        `
+                        <div class="wrap" data-index="${item['name']}"><li data-record-id="${item['id']}" class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="time">${createdtime}</span>
+                        <span class="item-name">${item['name']}</span>
+                        
+                    </div>
+                    <i data-record-id="${item['id']}" class="btnRemove far fa-trash-alt"></i>
+                    
+                    <img src="/static/pen.png" alt="pen" data-record-id2="${item['id']}">
+                    
+                </li></div>`;
+
+                    elementsHtml += element;
+                }
+            }
+            return elementsHtml;
+        }
+
+        /**
+         * Append list html in <ul> element
+         */
+        function loadAccountData(data, sort) {
+            const dataHtml = generateDataHtml(data, sort); //後值為sort值，沒有要sort，則傳入0；要sort，則傳入1
+            $('#item-lists').append(dataHtml);
+        }
+
+        /**
+         * Send GET requests to server to get purchase record from db
+         */
+        function getItemsFromServer() {
+            // console.log("123")
+            $.ajax({
+                url: API_URL,
+                method: 'GET',
+                success: function(data) {
+                    loadAccountData(data, 0) //由舊到新排序
+                },
+                error: function(xhr, ajaxOptions, thrownError) {
+                    console.log(xhr.status);
+                    console.log(thrownError);
+                }
+            });
+        }
+
+        function getSortedItemsFromServer() {
+            // console.log("123")
+            $.ajax({
+                url: API_URL,
+                method: 'GET',
+                success: function(data) {
+                    loadAccountData(data, 1) //1:由新到舊排序
+                },
+                error: function(xhr, ajaxOptions, thrownError) {
+                    console.log(xhr.status);
+                    console.log(thrownError);
+                }
+            });
+        }
+
+
+
+        /**
+         * Get Input Value (name & price) From html input area
+         */
+        function getPostInputData() {
+            const itemName = $('#input-item-name').val();
+            return {
+                'name': itemName,
+                'check': 0,
+            }
+        }
+
+
+        /**
+         * Send Post Request to create new purchase record
+         */
+        function postItemToServer(inputData) {
+            $.ajax({
+                url: API_URL,
+                method: 'POST',
+                data: inputData,
+                success: function(data) {
+                    console.log(data);
+                },
+                error: function(xhr, ajaxOptions, thrownError) {
+                    console.log(xhr.status);
+                    console.log(thrownError);
+                }
+            });
+        }
+
+        /**************************************************************
+         * Part 3: Edit Record by id
+         **************************************************************/
+        function showEditForm(recordId) {
+            const recordElement = $(`.list-group-item[data-record-id=${recordId}]`);
+            const oldName = recordElement.find('.item-name').text()
+            const formHtml = `
+                <form data-record-id="${recordId}" id="put-form" class="d-flex justify-content-between align-items-center">
+                    <div class="input-group">
+                        <button data-record-id="${recordId}" class="btn btn-link btnCancel">X</button>
+                        <div class="input-group-prepend">
+                            <span class="input-group-text">Name</span>
+                        </div>
+                        <input data-record-old-name="${oldName}" pattern=".{1,}" required title="1 characters minimum" type="text" aria-label="name" class="form-control" id="put-item-name" value=${oldName}>
+                        <button class="btn btn-link" type='submit'>Update</button>
+                    </div>
+                </form>`;
+
+            recordElement.html(formHtml);
+            recordElement.addClass('on-edit')
+        }
+
+        function cancelEditForm(recordId) {
+            const recordElement = $(`.list-group-item[data-record-id=${recordId}]`);
+            const oldName = recordElement.find('#put-item-name').attr('data-record-old-name');
+
+            if ($("#display-time").hasClass("on-time")) {
+                const element =
+                    `
+                    <div>
+                        <span class="time">${createdtime}</span>
+                        <span class="item-name">${oldName}</span>
+                    </div>
+                    <i data-record-id="${recordId}" class="btnRemove far fa-trash-alt"></i>
+                    <img src="/static/pen.png" alt="pen" data-record-id2="${recordId}">
+                    
+                `;
+                recordElement.html(element);
+                recordElement.removeClass('on-edit')
+            } else {
+                const element =
+                    `
+                    <div>
+                        <span class="item-name">${oldName}</span>
+                    </div>
+                    <i data-record-id="${recordId}" class="btnRemove far fa-trash-alt"></i>
+                    <img src="/static/pen.png" alt="pen" data-record-id2="${item['id']}">
+                    
+                `;
+
+                recordElement.html(element);
+                recordElement.removeClass('on-edit')
+
+            }
+
+
+        }
+
+
+        function getPutInputData(recordId) {
+            const recordElement = $(`.list-group-item[data-record-id=${recordId}]`);
+            const newName = recordElement.find('#put-item-name').val();
+            return {
+                id: recordId,
+                name: newName,
+                check: 0,
+            }
+        }
+
+        function sendEditItemRequest(recordId, inputData) {
+            $.ajax({
+                url: `${API_URL}/${inputData['id']}`,
+                method: 'PUT',
+                data: inputData,
+                success: function(data) {
+                    console.log(data);
+                },
+                error: function(xhr, ajaxOptions, thrownError) {
+                    console.log(xhr.status);
+                    console.log(thrownError);
+                }
+            });
+        }
+
+
+        /**************************************************************
+         * Part 4: Remove Record by id
+         **************************************************************/
+        function sendRemoveItemRequest(recordId) {
+            $.ajax({
+                url: `${API_URL}/${recordId}`,
+                method: 'DELETE',
+                success: function(data) {
+                    console.log(data);
+                    if (!Debug_Mode) {
+                        location.reload();
+                    }
+                },
+                error: function(xhr, ajaxOptions, thrownError) {
+                    console.log(xhr.status);
+                    console.log(thrownError);
+                }
+            });
+        }
+
+        /**************************************************************
+         * Part 5: Main Function (Event Listening)
+         **************************************************************/
+        // Display past purchase records
+        getItemsFromServer();
+        GetCheckData();
+
+        /**
+         * Listen: Form submit event (Create new record)
+         */
+        $('#post-form').submit(function(e) {
+            // prevent auto reload the page after sending request
+            preventReload(e)
+            const inputData = getPostInputData();
+            // check inputData is valid
+            if (inputData) {
+                // create new record
+                postItemToServer(inputData);
+            }
+        });
+
+
+        /**
+         * Listen: Remove icon Click event (Remove a old record)
+         * Delegate Intro: http://jsgears.com/thread-402-1-1.html
+         * Because the li elements is generated by js, we need to use delegate to bind all the remove buttons.
+         */
+
+        $("body").delegate(".btnRemove", "click", function(e) {
+            e.stopPropagation();
+            const recordId = $(this).attr('data-record-id');
+            sendRemoveItemRequest(recordId);
+        });
+
+
+        /**
+         * Listen: Double Click Event (Edit a old record)
+         */
+        // $("body").delegate(".list-group-item:not(.on-edit)", "dblclick", function(e) {
+        $("body").delegate("img:not(.on-edit)", "click", function(e) {
+            e.stopPropagation();
+            const recordId = $(this).attr('data-record-id2');
+            console.log(recordId)
+            if (recordId) {
+                showEditForm(recordId)
+            }
+        });
+
+        /**
+         * Listen: Click Event (Cancel Update Record) 按了 X 的時候
+         */
+
+        $("body").delegate(".btnCancel", "click", function(e) {
+            const recordId = $(this).attr('data-record-id');
+            cancelEditForm(recordId)
+        });
+
+        /**
+         * Listen: Click Event (Send Update Record Request)
+         */
+        $("body").delegate("#put-form", "submit", function(e) {
+            // prevent auto reload the page after sending request
+            preventReload(e)
+            const recordId = $(this).attr('data-record-id');
+            const inputData = getPutInputData(recordId);
+            sendEditItemRequest(recordId, inputData);
+        });
+
+        /**
+         * Listen: Click list -> finish (Send Update Record Request)
+         */
+        $("body").delegate(".list-group-item:not(.on-edit):not(.on-hide)", "click", function(e) {
+            const recordId = $(this).attr('data-record-id');
+            if (recordId) {
+                finishList(recordId);
+            }
+        });
+
+        $("body").delegate(".checked", "click", function(e) {
+            const recordId = $(this).children().attr('data-record-id');
+            if (recordId) {
+                cancelFinishList(recordId);
+            }
+        });
+
+
+        /*Listen:sort按鈕*/
+
+        // 若尚未sorted,點擊sort按鈕
+
+        $("body").delegate("#sort:not(.sorted)", "click", function(e) {
+            $("#display-time").addClass("on-time")
+            $("#sort").toggleClass("sorted")
+            ShowSortedList();
+        });
+
+        // 若已sorted,點擊sort按鈕
+
+        $("body").delegate(".sorted", "click", function(e) {
+            $("#display-time").addClass("on-time")
+            $("#sort").toggleClass("sorted")
+            CloseSortedList();
+        });
+
+        /*Listen:Time按鈕*/
+
+        $("body").delegate("#display-time", "click", function(e) {
+            $("#display-time").toggleClass("on-time")
+            $(".time").toggle();
+        });
+
+        /**Listen:Hide按鈕 */
+        // 尚未按下Hide按鈕，點擊Hide按鈕時
+
+        $("body").delegate("#hide:not(.on-hide)", "click", function(e) {
+            // $("#hide:not(.on-hide)").click(function() {
+            $(".checked").toggle();
+            $(".list-group-item").toggleClass("on-hide")
+            $("#hide").toggleClass("hided")
+            $("li img").toggle();
+        });
+
+
+        // 已按下Hide按鈕，點擊Hide按鈕時
+        $("body").delegate(".on-hide", "click", function(e) {
+            // $(".on-hide").click(function() {  
+            $(".checked").toggle();
+            $(".list-group-item").toggleClass("on-hide")
+            $("#hide").toggleClass("hided")
+        });
+
+        //從新到舊排序
+        function ShowSortedList() {
+            const Element = $("#item-lists");
+            Element.empty();
+            getSortedItemsFromServer();
+        }
+
+        //從舊到新排序
+        function CloseSortedList() {
+            const Element = $("#item-lists");
+            Element.empty();
+            getItemsFromServer();
+        }
+
+
+
+        // 完成就check
+        function finishList(recordId) {
+            const recordElement = $(`.list-group-item[data-record-id=${recordId}]`);
+            recordElement.children("img").remove();
+            recordElement.parent().addClass('checked')
+            const inputData = CheckInputData(recordId);
+            sendPutCheckRequest(recordId, inputData);
+        }
+
+
+        // 取消check
+        function cancelFinishList(recordId) {
+            const recordElement = $(`.list-group-item[data-record-id=${recordId}]`);
+            const element =
+                `<img src="/static/pen.png" alt="pen" data-record-id2="${recordId}">`;
+            recordElement.append(element);
+            recordElement.parent("div").removeClass('checked');
+
+            const inputData = NotCheckInputData(recordId);
+            sendPutCheckRequest(recordId, inputData);
+
+        }
+
+        // 更新 check = 1
+        function CheckInputData(recordId) {
+            const recordElement = $(`.list-group-item[data-record-id=${recordId}]`);
+            const oldName = recordElement.find('.item-name').text();
+            return {
+                id: recordId,
+                name: oldName,
+                check: 1,
+            }
+        }
+
+        // 更新 check = 0
+        function NotCheckInputData(recordId) {
+            const recordElement = $(`.list-group-item[data-record-id=${recordId}]`);
+            const oldName = recordElement.find('.item-name').text();
+            return {
+                id: recordId,
+                name: oldName,
+                check: 0,
+            }
+        }
+
+        // 更新後端 check 資訊 ，PUT(update)
+        function sendPutCheckRequest(recordId, inputData) {
+            $.ajax({
+                url: `${API_URL}/${inputData['id']}`,
+                method: 'PUT',
+                data: inputData,
+                success: function(data) {
+                    console.log(data);
+                    GetAlterCheckData();
+                },
+                error: function(xhr, ajaxOptions, thrownError) {
+                    console.log(xhr.status);
+                    console.log(thrownError);
+                }
+            });
+        }
+
+
+        /* 計算checked數目*/
+        function GetCheckData() {
+            $.ajax({
+                url: API_URL,
+                method: 'GET',
+                success: function(data) {
+                    console.log(data);
+                    a = CountCheck(data);
+                    PrintCountCheck(a);
+                },
+                error: function(xhr, ajaxOptions, thrownError) {
+                    console.log(xhr.status);
+                    console.log(thrownError);
+                }
+            });
+        }
+
+        function CountCheck(data) {
+            var count = 0;
+            for (item of data) {
+                if (item['check'] === 1) {
+                    count += 1;
+                }
+            }
+            return count;
+        }
+
+        function PrintCountCheck(checkcounts) {
+            // setTimeout(function() {
+            const Element = $(`.finish-count`);
+            const formHtml = `<span class="lead">${checkcounts} finished !</span>`;
+            Element.append(formHtml)
+        }
+
+        function GetAlterCheckData() {
+            $.ajax({
+                url: API_URL,
+                method: 'GET',
+                success: function(data) {
+                    console.log(data);
+                    a = CountCheck(data);
+                    AlterCheckData(a);
+                },
+                error: function(xhr, ajaxOptions, thrownError) {
+                    console.log(xhr.status);
+                    console.log(thrownError);
+                }
+            });
+        }
+
+        function AlterCheckData(Newcheckcounts) {
+            const Element = $(`.finish-count`);
+            const removeElement = $(`.lead`);
+            removeElement.remove();
+            const formHtml = `<span class="lead">${Newcheckcounts} finished !</span>`;
+            Element.append(formHtml);
+        }
+
+
+        /*search*/
+
+        $("#search-input").bind("change paste keyup", function() {
+            var mSearch = $("#m-search");
+            var value = $(this).val();
+            console.log(value);
+
+            if (!value) {;
+                mSearch.html("");
+                return;
+            };
+            console.log(value.toLowerCase());
+            console.log($(".wrap").attr("data-index"));
+            mSearch.html('.wrap:not([data-index*="' + value + '"]) {display: none;}');
+
+        });
+    </script>
+</body>
+
+</html>
