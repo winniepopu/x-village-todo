@@ -162,7 +162,7 @@
                 url: API_URL,
                 method: 'GET',
                 success: function(data) {
-                    loadAccountData(data, 0) //由舊到新排序
+                    loadAccountData(data, 0) //0:由舊到新排序
                 },
                 error: function(xhr, ajaxOptions, thrownError) {
                     console.log(xhr.status);
